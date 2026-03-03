@@ -9,7 +9,7 @@ function build() {
 
   execSync('node scripts/generate-icons.mjs', { stdio: 'inherit' });
 
-  const files = ['content.js', 'devtools.html', 'devtools.js', 'panel.html', 'panel.js', 'PRIVACY.md', 'manifest.json'];
+  const files = ['content.js', 'devtools.html', 'devtools.js', 'options.html', 'options.js', 'panel.html', 'panel.js', 'PRIVACY.md', 'manifest.json'];
   files.forEach(file => cpSync(file, `dist/${file}`));
 
   if (isDev) {

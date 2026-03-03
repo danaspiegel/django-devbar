@@ -329,3 +329,114 @@ class TestMiddleware:
         middleware = DevBarMiddleware(get_response)
         response = middleware(rf.get("/"))
         assert "DevBar-Data" not in response
+
+    def test_allowed_hosts_no_restriction_shows_bar(self, rf, settings):
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": []}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", SERVER_NAME="any.example.com"))
+        assert b"django-devbar" in response.content
+
+    def test_allowed_hosts_exact_match_shows_bar(self, rf, settings):
+        # Django's ALLOWED_HOSTS must include the host for request.get_host() to succeed
+        settings.ALLOWED_HOSTS = ["staging.example.com"]
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": ["staging.example.com"]}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="staging.example.com"))
+        assert b"django-devbar" in response.content
+
+    def test_allowed_hosts_non_matching_hides_bar(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["other.example.com"]
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": ["staging.example.com"]}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="other.example.com"))
+        assert b"django-devbar" not in response.content
+
+    def test_allowed_hosts_wildcard_shows_bar(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["app-dev.example.com"]
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": ["*.example.com"]}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="app-dev.example.com"))
+        assert b"django-devbar" in response.content
+
+    def test_allowed_hosts_wildcard_does_not_match_apex(self, rf, settings):
+        # *.example.com should NOT match example.com (the apex domain)
+        settings.ALLOWED_HOSTS = ["example.com"]
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": ["*.example.com"]}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="example.com"))
+        assert b"django-devbar" not in response.content
+
+    def test_allowed_hosts_wildcard_non_matching_hides_bar(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["other.com"]
+        settings.DEVBAR = {"SHOW_BAR": True, "ALLOWED_HOSTS": ["*.example.com"]}
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="other.com"))
+        assert b"django-devbar" not in response.content
+
+    def test_allowed_hosts_wildcard_devtools_header_shown(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["api.example.com"]
+        settings.DEVBAR = {
+            "ENABLE_DEVTOOLS_DATA": True,
+            "ALLOWED_HOSTS": ["*.example.com"],
+        }
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="api.example.com"))
+        assert "DevBar-Data" in response
+
+    def test_allowed_hosts_wildcard_devtools_header_hidden(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["other.com"]
+        settings.DEVBAR = {
+            "ENABLE_DEVTOOLS_DATA": True,
+            "ALLOWED_HOSTS": ["*.example.com"],
+        }
+
+        def get_response(request):
+            return HttpResponse(
+                "<html><body>Test</body></html>", content_type="text/html"
+            )
+
+        middleware = DevBarMiddleware(get_response)
+        response = middleware(rf.get("/", HTTP_HOST="other.com"))
+        assert "DevBar-Data" not in response

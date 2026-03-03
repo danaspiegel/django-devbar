@@ -9,6 +9,7 @@ from django.template import Context, Engine
 
 from . import tracker
 from .conf import (
+    get_allowed_hosts,
     get_devtools_header_max_bytes,
     get_devtools_max_queries,
     get_enable_devtools_data,
@@ -49,12 +50,12 @@ class DevBarMiddleware:
         stats["python_time"] = python_time
         stats["total_time"] = round(total_time, 2)
 
-        if get_enable_devtools_data():
+        if get_enable_devtools_data() and self._is_allowed_host(request):
             self._add_devtools_data_header(response, stats)
 
         self._add_server_timing_header(response, stats)
 
-        if get_show_bar() and self._can_inject(response):
+        if get_show_bar() and self._can_inject(response) and self._is_allowed_host(request):
             self._inject_devbar(response, stats)
 
         return response
@@ -166,6 +167,27 @@ class DevBarMiddleware:
             f"total;dur={stats['total_time']:.2f}",
         ]
         response["Server-Timing"] = ", ".join(parts)
+
+    def _is_allowed_host(self, request):
+        allowed_hosts = get_allowed_hosts()
+        if not allowed_hosts:
+            return True
+        try:
+            hostname = request.get_host().split(":")[0].lower()
+        except Exception:
+            return False
+        for pattern in allowed_hosts:
+            if not pattern:
+                continue
+            if pattern.startswith("*."):
+                base = pattern[2:].lower()
+                if hostname.endswith("." + base):
+                    return True
+            else:
+                base = pattern.lower()
+                if hostname == base or hostname.endswith("." + base):
+                    return True
+        return False
 
     def _can_inject(self, response):
         if getattr(response, "streaming", False):

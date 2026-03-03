@@ -15,7 +15,6 @@ def get_config():
         "ENABLE_DEVTOOLS_DATA": None,  # None = use settings.DEBUG
         "DEVTOOLS_HEADER_MAX_BYTES": 6144,
         "DEVTOOLS_MAX_QUERIES": None,
-        "ALLOWED_HOSTS": [],  # [] = no restriction; supports wildcards, e.g. "*.domain.com"
         **getattr(settings, "DEVBAR", {}),
     }
 
@@ -46,8 +45,3 @@ def get_devtools_header_max_bytes():
 def get_devtools_max_queries():
     config = get_config()
     return config["DEVTOOLS_MAX_QUERIES"]
-
-
-def get_allowed_hosts():
-    config = get_config()
-    return config["ALLOWED_HOSTS"]

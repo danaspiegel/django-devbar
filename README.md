@@ -66,7 +66,6 @@ DEVBAR = {
     "ENABLE_DEVTOOLS_DATA": None,  # follows DEBUG; set True/False to override
     "DEVTOOLS_HEADER_MAX_BYTES": 6144,  # max bytes for DevBar-Data header payload
     "DEVTOOLS_MAX_QUERIES": None,  # optional hard cap for q/dup entries sent to DevTools
-    "ALLOWED_HOSTS": [],  # restrict devbar to specific hosts; supports wildcards, e.g. "*.domain.com"
 }
 ```
 

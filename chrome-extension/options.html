@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Django DevBar – Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #333; background: #f5f5f5; padding: 24px; max-width: 560px; }
+    h1 { font-size: 16px; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 12px; margin-bottom: 24px; }
+    .subtitle a { color: #1a73e8; text-decoration: none; }
+    .subtitle a:hover { text-decoration: underline; }
+
+    .section { background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .section h2 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .section p { font-size: 12px; color: #666; margin-bottom: 12px; line-height: 1.5; }
+
+    label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 6px; }
+    textarea {
+      width: 100%; height: 120px; padding: 8px 10px;
+      border: 1px solid #ddd; border-radius: 4px;
+      font: 12px/1.6 monospace; resize: vertical;
+      background: #fafafa; color: #333;
+    }
+    textarea:focus { outline: none; border-color: #1a73e8; background: #fff; }
+
+    .actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    button {
+      padding: 7px 16px; border: none; border-radius: 4px;
+      font: 12px/1 inherit; cursor: pointer;
+    }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-primary:disabled { background: #93b9f5; cursor: default; }
+
+    .status { font-size: 12px; }
+    .status.success { color: #16a34a; }
+    .status.error { color: #dc2626; }
+    .status.info { color: #1a73e8; }
+
+    .domain-list { margin-top: 12px; }
+    .domain-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; background: #f8f8f8; border-radius: 4px;
+      margin-bottom: 4px; font-size: 12px;
+    }
+    .domain-item .domain-name { font-family: monospace; }
+    .domain-item .domain-status { font-size: 11px; color: #16a34a; }
+    .domain-item .remove-btn {
+      background: none; border: none; color: #999; cursor: pointer;
+      font-size: 14px; line-height: 1; padding: 0 4px;
+    }
+    .domain-item .remove-btn:hover { color: #dc2626; }
+
+    .note { font-size: 11px; color: #888; margin-top: 8px; line-height: 1.5; }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1e; color: #e0e0e0; }
+      .subtitle { color: #999; }
+      .subtitle a { color: #6db3f2; }
+      .section { background: #2d2d2d; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+      textarea { background: #1e1e1e; border-color: #444; color: #e0e0e0; }
+      textarea:focus { border-color: #6db3f2; background: #252525; }
+      .btn-primary { background: #1a73e8; }
+      .btn-primary:hover { background: #1557b0; }
+      .domain-item { background: #252525; }
+      .domain-item .remove-btn { color: #666; }
+      .domain-item .remove-btn:hover { color: #f87171; }
+      .note { color: #666; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Django DevBar Settings</h1>
+  <p class="subtitle">
+    Configuration for the <a href="https://github.com/amureki/django-devbar" target="_blank">django-devbar</a> Chrome extension.
+  </p>
+
+  <div class="section">
+    <h2>Custom Domains</h2>
+    <p>
+      By default the extension works on <code>localhost</code>, <code>127.0.0.1</code>, <code>*.local</code>, and <code>*.test</code>.
+      Add any extra domains (e.g. a staging server) where DevBar headers should also be read.
+    </p>
+    <label for="domains-input">Domains (one per line, e.g. <code>staging.myapp.com</code> or <code>dev.example.com:8000</code> — no protocol or paths):</label>
+    <textarea id="domains-input" placeholder="staging.myapp.com&#10;dev.example.com:8000"></textarea>
+    <div class="actions">
+      <button id="save-btn" class="btn-primary">Save</button>
+      <span id="status" class="status"></span>
+    </div>
+    <p class="note">
+      ⚠️ Chrome will ask for permission to access each new domain so the extension can inject the
+      show/hide toggle into those pages. You can deny the permission — the DevTools panel metrics
+      will still work, but the on-page toggle button will not.
+    </p>
+  </div>
+
+  <div class="section" id="active-section" style="display:none">
+    <h2>Active Custom Domains</h2>
+    <div id="domain-list" class="domain-list"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

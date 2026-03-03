@@ -67,6 +67,8 @@
     .controls input[type="checkbox"] { cursor: pointer; }
     .repo-link { font-size: 10px; color: #1a73e8; text-decoration: none; }
     .repo-link:hover { text-decoration: underline; }
+    .settings-link { font-size: 10px; color: #888; text-decoration: none; flex-shrink: 0; }
+    .settings-link:hover { color: #1a73e8; text-decoration: none; }
 
     @media (prefers-color-scheme: dark) {
       body { background: #1e1e1e; color: #e0e0e0; }
@@ -111,6 +113,7 @@
       <input type="checkbox" id="show-bar-toggle" checked>
       Show <a href="https://github.com/amureki/django-devbar" target="_blank" class="repo-link">django-devbar</a> on page
     </label>
+    <a href="#" id="settings-link" class="settings-link" title="Open settings">⚙ Settings</a>
   </div>
   <div id="app"></div>
   <script type="module" src="panel.js"></script>

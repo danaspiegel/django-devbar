@@ -1,5 +1,18 @@
 const MAX_HISTORY = 50;
 const STORAGE_KEY = 'django-devbar-show-bar';
+const CUSTOM_DOMAINS_KEY = 'django-devbar-custom-domains';
+
+let customDomains = [];
+
+chrome.storage.sync.get([CUSTOM_DOMAINS_KEY], (result) => {
+  customDomains = result[CUSTOM_DOMAINS_KEY] || [];
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes[CUSTOM_DOMAINS_KEY]) {
+    customDomains = changes[CUSTOM_DOMAINS_KEY].newValue || [];
+  }
+});
 
 const checkbox = document.getElementById('show-bar-toggle');
 if (checkbox && chrome && chrome.storage) {
@@ -9,6 +22,14 @@ if (checkbox && chrome && chrome.storage) {
 
   checkbox.addEventListener('change', () => {
     chrome.storage.local.set({ [STORAGE_KEY]: checkbox.checked });
+  });
+}
+
+const settingsLink = document.getElementById('settings-link');
+if (settingsLink) {
+  settingsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
   });
 }
 
@@ -222,7 +243,17 @@ function renderEmptyState() {
     pageUrl.includes('localhost') ||
     pageUrl.includes('127.0.0.1') ||
     pageUrl.includes('.local') ||
-    pageUrl.includes('.test')
+    pageUrl.includes('.test') ||
+    (() => {
+      try {
+        const hostname = new URL(pageUrl).hostname;
+        return customDomains.some(domain => domain && (
+          hostname === domain || hostname.endsWith('.' + domain)
+        ));
+      } catch (e) {
+        return false;
+      }
+    })()
   );
 
   let html = `
@@ -231,8 +262,12 @@ function renderEmptyState() {
 
   if (!isLocalDomain && pageUrl) {
     html += `
-      <p style="margin-top: 12px;">⚠️ Not on a local development domain</p>
-      <p style="margin-top: 6px;">This extension only works on localhost and local development domains.</p>
+      <p style="margin-top: 12px;">⚠️ Not on a recognised development domain</p>
+      <p style="margin-top: 6px;">This extension works on localhost and local development domains by default.</p>
+      <p style="margin-top: 8px; font-size: 11px;">
+        To enable it on this domain, add it in
+        <a href="#" id="open-settings-link" style="color: #1a73e8;">extension settings</a>.
+      </p>
       <p style="margin-top: 12px; font-size: 10px;">
         <a href="https://github.com/amureki/django-devbar" target="_blank" style="color: #1a73e8;">django-devbar</a>
       </p>`;
@@ -254,6 +289,14 @@ function renderEmptyState() {
 
   html += `</div>`;
   app.innerHTML = html;
+
+  const settingsLink = document.getElementById('open-settings-link');
+  if (settingsLink) {
+    settingsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      chrome.runtime.openOptionsPage();
+    });
+  }
 }
 
 function renderUI() {

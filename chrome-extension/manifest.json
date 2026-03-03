@@ -5,12 +5,14 @@
   "description": "View Django DevBar metrics in Chrome DevTools: database queries, response times, and duplicate queries.",
   "homepage_url": "https://github.com/amureki/django-devbar",
   "devtools_page": "devtools.html",
+  "options_page": "options.html",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting"],
+  "optional_host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
       "matches": [

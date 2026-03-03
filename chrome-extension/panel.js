@@ -247,9 +247,11 @@ function renderEmptyState() {
     (() => {
       try {
         const hostname = new URL(pageUrl).hostname;
-        return customDomains.some(domain => domain && (
-          hostname === domain || hostname.endsWith('.' + domain)
-        ));
+        return customDomains.some(domain => {
+          if (!domain) return false;
+          const base = domain.startsWith('*.') ? domain.slice(2) : domain;
+          return hostname === base || hostname.endsWith('.' + base);
+        });
       } catch (e) {
         return false;
       }

@@ -1,0 +1,39 @@
+name: Build Chrome Extension
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: build-extension-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Build & package extension
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: chrome-extension/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: chrome-extension
+      - name: Build extension
+        run: npm run build
+        working-directory: chrome-extension
+      - name: Create zip
+        run: npm run zip
+        working-directory: chrome-extension
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-devbar-extension
+          path: chrome-extension/django-devbar-extension.zip
+          retention-days: 30
